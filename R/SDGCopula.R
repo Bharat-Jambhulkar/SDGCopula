@@ -167,7 +167,7 @@ fitCop <- function(dataframe, copula, parametric, dof){
       return(dataframe1)
     }
     
-  #For t-Copula
+    #For t-Copula
   }else if(copula=='t'){ 
     if(parametric==T){
       myCop <- copula::tCopula(df=dof, param=cor_struct(cor(dataframe1, method=c('spearman'))), dim = ncol(dataframe1), dispstr = "un")
@@ -194,7 +194,7 @@ fitCop <- function(dataframe, copula, parametric, dof){
       dataframe1[sapply(dataframe1, is.character)] <- lapply(dataframe1[sapply(dataframe1, is.character)], as.factor)
       return(dataframe1)
     }
-  
+    
   }else{
     stop('Error: Undefined Copula')
   }
@@ -208,15 +208,22 @@ histfit <- function(df,position,ylim,xlab){
   if(missing(position)){
     position='topright'
   }
-   if(missing(xlab)){
-    xlab='Value'
+  if(missing(xlab)){
+    xlab='value'
   }
-  if(missing(ylim)){
-    plotrix::multhist(l, xlab=xlab, ylab='Frequency', col=c('red', 'blue'))
-    legend(position, legend=colnames(df), fill=c('red', 'blue'))
+  
+  if(lapply(df, class)[1]=='factor' && lapply(df, class)[2]=='factor'){
+    plot(df[,1],col=rgb(1,0,0,1/4))
+    plot(df[,2], col=rgb(0,0,1,1/4), add=T)
+
   }else{
-    plotrix::multhist(l, xlab=xlab, ylab='Frequency', col=c('red', 'blue'),ylim=ylim)
-    legend(position, legend=colnames(df), fill=c('red', 'blue'))
+    if(missing(ylim)){
+      plotrix::multhist(l, xlab=xlab, ylab='Frequency', col=c('red', 'blue'))
+      legend(position, legend=colnames(df), fill=c('red', 'blue'))
+    }else{
+      plotrix::multhist(l, xlab=xlab, ylab='Frequency', col=c('red', 'blue'),ylim=ylim)
+      legend(position, legend=colnames(df), fill=c('red', 'blue'))
+    }
   }
 }
 
@@ -232,19 +239,25 @@ corrfit <- function(orig, syn){
 }
 
 
-#Function to plot (PC1 vs. PC2)  for Original & Synthetic datasets.
-pcafit <- function(orig, syn){
+#Function to plot (PC1 vs. PC2)  for Original & Synthetic data sets.
+pcafit <- function(orig, syn,varimax){
+  if(missing(varimax)){ #Varimax=F by default.
+    varimax=F
+  }
   orig <- tonumeric(orig)
   syn <- tonumeric(syn)
-  foo <- function(x) return(x/sqrt(sum(x^2)))
+  # foo <- function(x) return(x/sqrt(sum(x^2)))
   cor_orig <- round(cor(orig, method='spearman'),2)
   cor_syn <- round(cor(syn, method='spearman'),2)
-  eigen1 <- eigen(cor_orig)$vectors
-  apply(eigen1,2,foo)
-  eigen2 <- eigen(cor_syn)$vectors
-  apply(eigen2,2,foo)
-  PC_orig <- as.matrix(orig)%*%eigen1
-  PC_syn <- as.matrix(syn)%*%eigen2
+  if(varimax==F){
+    eigen1 <- eigen(cor_orig)$vectors*sqrt(eigen(cor_orig)$values)
+    eigen2 <- eigen(cor_syn)$vectors*sqrt(eigen(cor_syn)$values)
+  }else if(varimax==T){
+    eigen1 <- varimax(eigen(cor_orig)$vectors*sqrt(eigen(cor_orig)$values))$loadings
+    eigen2 <- varimax(eigen(cor_syn)$vectors*sqrt(eigen(cor_syn)$values))$loadings
+  }
+  PC_orig <- scale(as.matrix(orig))%*%eigen1
+  PC_syn <- scale(as.matrix(syn))%*%eigen2
   par(mfrow=c(1,2))
   plot(PC_orig[,1], PC_orig[,2], xlab='PC1', ylab='PC2', main='Original Dataset', col='red')
   plot(PC_syn[,1], PC_syn[,2], xlab='PC1', ylab='PC2', main='Synthetic Dataset', col='blue')
