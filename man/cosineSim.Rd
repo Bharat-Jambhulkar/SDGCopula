@@ -2,7 +2,7 @@
 % Please edit documentation in R/SDGCopula.R
 \name{cosineSim}
 \alias{cosineSim}
-\title{Compare angles}
+\title{Cosine Similairty between datasets}
 \usage{
 cosineSim(orig, syn)
 }
@@ -15,7 +15,7 @@ cosineSim(orig, syn)
 value between -1 to 1 which indicate similarity between two data frames.
 }
 \description{
-Compare angles
+Computes cosine similarity score ranging from -1 to 1. If score is close to 1, then it indicates that vectors of a individual variables in two datasets are aligned in the same direction.
 }
 \examples{
 cosineSim(orig, syn)
