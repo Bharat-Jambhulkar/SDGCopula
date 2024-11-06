@@ -127,7 +127,12 @@ tocategory <- function(x){
 
 #Function to fit Normal/t-copula for dim>=2
 fitCop <- function(dataframe, copula, parametric, dof){
-  
+  c1 <- names(which(sapply(dataframe, is.character)))
+  if(length(c1)>0){
+    cat_var <- toString(c1)
+    print(paste0('These Variable(s): ',cat_var, ' are identified as character and have been changed to factor for analysis.'))
+    dataframe[sapply(dataframe, is.character)] <- lapply(dataframe[sapply(dataframe, is.character)], as.factor)
+  }
   dataframe1 <- tonumeric(dataframe)
   
   if(missing(dof)){ #dof=4 by default
@@ -241,7 +246,7 @@ corrfit <- function(orig, syn){
 
 #Function to plot (PC1 vs. PC2)  for Original & Synthetic data sets.
 pcafit <- function(orig, syn,varimax){
-  if(missing(varimax)){ #Varimax=F by default.
+  if(missing(varimax)){
     varimax=F
   }
   orig <- tonumeric(orig)
