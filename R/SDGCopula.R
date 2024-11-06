@@ -125,8 +125,10 @@ tocategory <- function(x){
 } 
 
 
+
 #Function to fit Normal/t-copula for dim>=2
 fitCop <- function(dataframe, copula, parametric, dof){
+  pb <- txtProgressBar(min = 1, max = ncol(dataframe), style = 3)
   c1 <- names(which(sapply(dataframe, is.character)))
   if(length(c1)>0){
     cat_var <- toString(c1)
@@ -160,10 +162,13 @@ fitCop <- function(dataframe, copula, parametric, dof){
       }
       for(j in 1:ncol(dataframe1)){
         if(class(dataframe[,j])=='numeric'){
+          setTxtProgressBar(pb, j)
           dataframe1[,j] <- qdist(u[,j],dataframe1[,j],type = 0)
         }else if(class(dataframe[,j])=='factor'){
+          setTxtProgressBar(pb, j)
           dataframe1[,j] <- qdist(u[,j],dataframe1[,j],type = 1)
         }else if(class(dataframe[,j])=='integer'){
+          setTxtProgressBar(pb, j)
           dataframe1[,j] <- qdist(u[,j],dataframe1[,j],type = 2)
         }
       }
@@ -188,10 +193,13 @@ fitCop <- function(dataframe, copula, parametric, dof){
       }
       for(j in 1:ncol(dataframe1)){
         if(class(dataframe[,j])=='numeric'){
+          setTxtProgressBar(pb, j)
           dataframe1[,j] <- qdist(u[,j],dataframe1[,j],type = 0)
         }else if(class(dataframe[,j])=='factor'){
+          setTxtProgressBar(pb, j)
           dataframe1[,j] <- qdist(u[,j],dataframe1[,j],type = 1)
         }else if(class(dataframe[,j])=='integer'){
+          setTxtProgressBar(pb, j)
           dataframe1[,j] <- qdist(u[,j],dataframe1[,j],type = 2)
         }
       }
@@ -203,6 +211,7 @@ fitCop <- function(dataframe, copula, parametric, dof){
   }else{
     stop('Error: Undefined Copula')
   }
+  close(pb)
 }
 
 
