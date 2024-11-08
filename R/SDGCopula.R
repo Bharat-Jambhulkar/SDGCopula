@@ -3,10 +3,10 @@
 # Install CRAN packages (if not already installed)
 .inst <- .packages %in% installed.packages()
 if(length(.packages[!.inst]) > 0) install.packages(.packages[!.inst])
-# Load packages into session 
+# Load packages into session
 # lapply(.packages, require, character.only=TRUE)
 lapply(.packages, FUN = function(X) {
-  do.call("require", list(X)) 
+  do.call("require", list(X))
 })
 
 
@@ -81,8 +81,8 @@ qdist <- function(u, input, type){
     return(quantile)
   }else if(type==2){ # 2:integer
     quantile <- c()
-    prob <- c() 
-    support <- sort(unique(input)) 
+    prob <- c()
+    support <- sort(unique(input))
     for(i in support){
       prob <- append(prob, sum(ifelse(input==i,1,0))/length(input))
     }
@@ -122,7 +122,7 @@ tocategory <- function(x){
   codes <- attr(x, 'codes')
   x[names(codes)] <- Map(\(i,j)j[i], x[names(codes)], codes)
   x
-} 
+}
 
 
 
@@ -130,13 +130,9 @@ tocategory <- function(x){
 fitCop <- function(dataframe, copula, parametric, dof){
   pb <- txtProgressBar(min = 1, max = ncol(dataframe), style = 3)
   c1 <- names(which(sapply(dataframe, is.character)))
-  if(length(c1)>0){
-    cat_var <- toString(c1)
-    print(paste0('These Variable(s): ',cat_var, ' are identified as character and have been changed to factor for analysis.'))
-    dataframe[sapply(dataframe, is.character)] <- lapply(dataframe[sapply(dataframe, is.character)], as.factor)
-  }
+
   dataframe1 <- tonumeric(dataframe)
-  
+
   if(missing(dof)){ #dof=4 by default
     dof=4
   }
@@ -148,6 +144,11 @@ fitCop <- function(dataframe, copula, parametric, dof){
   }
   #For normal-Copula
   if(copula=='normal'){
+    if(length(c1)>0){
+      cat_var <- toString(c1)
+      print(paste0('These Variable(s): ',cat_var, ' are identified as character and have been changed to factor for analysis.'))
+      dataframe[sapply(dataframe, is.character)] <- lapply(dataframe[sapply(dataframe, is.character)], as.factor)
+    }
     if(parametric==T){
       myCop <- copula::normalCopula(param=cor_struct(cor(dataframe1, method=c('spearman'))), dim = ncol(dataframe1), dispstr = "un")
       myMvd <- copula::mvdc(myCop, margins=marginals(dataframe1)$dist, paramMargins = marginals(dataframe1)$par)
@@ -159,6 +160,8 @@ fitCop <- function(dataframe, copula, parametric, dof){
       sample <- MASS::mvrnorm(nrow(dataframe1),mu=rep(0,ncol(dataframe1)),Sigma=cor(dataframe1,method=c('spearman')),empirical=T)
       for(i in 1:ncol(u)){
         u[,i] <- pnorm(sample[,i])
+        # u[,i] <- pobs(sample[,i])
+
       }
       for(j in 1:ncol(dataframe1)){
         if(class(dataframe[,j])=='numeric'){
@@ -168,17 +171,22 @@ fitCop <- function(dataframe, copula, parametric, dof){
           setTxtProgressBar(pb, j)
           dataframe1[,j] <- qdist(u[,j],dataframe1[,j],type = 1)
         }else if(class(dataframe[,j])=='integer'){
-          dataframe1[,j] <- qdist(u[,j],dataframe1[,j],type = 2)
           setTxtProgressBar(pb, j)
+          dataframe1[,j] <- qdist(u[,j],dataframe1[,j],type = 2)
         }
       }
       dataframe1 <- tocategory(dataframe1)
       dataframe1[sapply(dataframe1, is.character)] <- lapply(dataframe1[sapply(dataframe1, is.character)], as.factor)
       return(dataframe1)
     }
-    
+
     #For t-Copula
-  }else if(copula=='t'){ 
+  }else if(copula=='t'){
+    if(length(c1)>0){
+      cat_var <- toString(c1)
+      print(paste0('These Variable(s): ',cat_var, ' are identified as character and have been changed to factor for analysis.'))
+      dataframe[sapply(dataframe, is.character)] <- lapply(dataframe[sapply(dataframe, is.character)], as.factor)
+    }
     if(parametric==T){
       myCop <- copula::tCopula(df=dof, param=cor_struct(cor(dataframe1, method=c('spearman'))), dim = ncol(dataframe1), dispstr = "un")
       myMvd <- copula::mvdc(myCop, margins=marginals(dataframe1)$dist, paramMargins = marginals(dataframe1)$par)
@@ -190,24 +198,26 @@ fitCop <- function(dataframe, copula, parametric, dof){
       sample <- mvtnorm::rmvt(nrow(dataframe1), df=dof, sigma=cor(dataframe1,method=c('spearman')))
       for(i in 1:ncol(u)){
         u[,i] <- pt(sample[,i], df=dof)
+
+
       }
       for(j in 1:ncol(dataframe1)){
         if(class(dataframe[,j])=='numeric'){
+          setTxtProgressBar(pb, j)
           dataframe1[,j] <- qdist(u[,j],dataframe1[,j],type = 0)
-          setTxtProgressBar(pb, j)
         }else if(class(dataframe[,j])=='factor'){
+          setTxtProgressBar(pb, j)
           dataframe1[,j] <- qdist(u[,j],dataframe1[,j],type = 1)
-          setTxtProgressBar(pb, j)
         }else if(class(dataframe[,j])=='integer'){
-          dataframe1[,j] <- qdist(u[,j],dataframe1[,j],type = 2)
           setTxtProgressBar(pb, j)
+          dataframe1[,j] <- qdist(u[,j],dataframe1[,j],type = 2)
         }
       }
       dataframe1 <- tocategory(dataframe1)
       dataframe1[sapply(dataframe1, is.character)] <- lapply(dataframe1[sapply(dataframe1, is.character)], as.factor)
       return(dataframe1)
     }
-    
+
   }else{
     stop('Error: Undefined Copula')
   }
@@ -225,7 +235,7 @@ histfit <- function(df,position,ylim,xlab){
   if(missing(xlab)){
     xlab='value'
   }
-  
+
   if(lapply(df, class)[1]=='factor' && lapply(df, class)[2]=='factor'){
     plot(df[,1],col=rgb(1,0,0,1/4))
     plot(df[,2], col=rgb(0,0,1,1/4), add=T)
@@ -276,7 +286,7 @@ pcafit <- function(orig, syn,varimax){
   plot(PC_orig[,1], PC_orig[,2], xlab='PC1', ylab='PC2', main='Original Dataset', col='red')
   plot(PC_syn[,1], PC_syn[,2], xlab='PC1', ylab='PC2', main='Synthetic Dataset', col='blue')
   par(mfrow=c(1,1))
-  
+
 }
 
 #Function to return pair plots
