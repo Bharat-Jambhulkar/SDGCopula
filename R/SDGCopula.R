@@ -168,8 +168,8 @@ fitCop <- function(dataframe, copula, parametric, dof){
           setTxtProgressBar(pb, j)
           dataframe1[,j] <- qdist(u[,j],dataframe1[,j],type = 1)
         }else if(class(dataframe[,j])=='integer'){
-          setTxtProgressBar(pb, j)
           dataframe1[,j] <- qdist(u[,j],dataframe1[,j],type = 2)
+          setTxtProgressBar(pb, j)
         }
       }
       dataframe1 <- tocategory(dataframe1)
@@ -193,14 +193,14 @@ fitCop <- function(dataframe, copula, parametric, dof){
       }
       for(j in 1:ncol(dataframe1)){
         if(class(dataframe[,j])=='numeric'){
-          setTxtProgressBar(pb, j)
           dataframe1[,j] <- qdist(u[,j],dataframe1[,j],type = 0)
+          setTxtProgressBar(pb, j)
         }else if(class(dataframe[,j])=='factor'){
-          setTxtProgressBar(pb, j)
           dataframe1[,j] <- qdist(u[,j],dataframe1[,j],type = 1)
-        }else if(class(dataframe[,j])=='integer'){
           setTxtProgressBar(pb, j)
+        }else if(class(dataframe[,j])=='integer'){
           dataframe1[,j] <- qdist(u[,j],dataframe1[,j],type = 2)
+          setTxtProgressBar(pb, j)
         }
       }
       dataframe1 <- tocategory(dataframe1)
