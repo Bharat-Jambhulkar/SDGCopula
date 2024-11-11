@@ -127,7 +127,7 @@ tocategory <- function(x){
 
 
 #Function to fit Normal/t-copula for dim>=2
-fitCop <- function(dataframe, copula, parametric, dof){
+synthesize <- function(dataframe, copula, parametric, dof){
   pb <- txtProgressBar(min = 1, max = ncol(dataframe), style = 3)
   c1 <- names(which(sapply(dataframe, is.character)))
 
@@ -154,7 +154,10 @@ fitCop <- function(dataframe, copula, parametric, dof){
       myMvd <- copula::mvdc(myCop, margins=marginals(dataframe1)$dist, paramMargins = marginals(dataframe1)$par)
       Z <- copula::rMvdc(nrow(dataframe1), myMvd)
       colnames(Z) <- colnames(dataframe1)
-      return(tocategory(Z))
+      return(list(df=Z,
+                  RMSE=RMSE(Z, dataframe),
+                  cosineSim=cosineSim(Z, dataframe)))
+
     }else if(parametric==F){
       u <- data.frame(matrix(ncol=ncol(dataframe),nrow=nrow(dataframe)))
       sample <- MASS::mvrnorm(nrow(dataframe1),mu=rep(0,ncol(dataframe1)),Sigma=cor(dataframe1,method=c('spearman')),empirical=T)
@@ -177,7 +180,9 @@ fitCop <- function(dataframe, copula, parametric, dof){
       }
       dataframe1 <- tocategory(dataframe1)
       dataframe1[sapply(dataframe1, is.character)] <- lapply(dataframe1[sapply(dataframe1, is.character)], as.factor)
-      return(dataframe1)
+      return(list(df=dataframe1,
+                  RMSE=RMSE(dataframe1, tonumeric(dataframe)),
+                  cosineSim=cosineSim(dataframe1, tonumeric(dataframe))))
     }
 
     #For t-Copula
@@ -192,7 +197,10 @@ fitCop <- function(dataframe, copula, parametric, dof){
       myMvd <- copula::mvdc(myCop, margins=marginals(dataframe1)$dist, paramMargins = marginals(dataframe1)$par)
       Z <- copula::rMvdc(nrow(dataframe1), myMvd)
       colnames(Z) <- colnames(dataframe1)
-      return(tocategory(Z))
+      return(list(df=Z,
+                  RMSE=RMSE(Z, dataframe),
+                  cosineSim=cosineSim(Z, dataframe)))
+
     }else if(parametric==F){
       u <- data.frame(matrix(ncol=ncol(dataframe1),nrow=nrow(dataframe1)))
       sample <- mvtnorm::rmvt(nrow(dataframe1), df=dof, sigma=cor(dataframe1,method=c('spearman')))
@@ -215,7 +223,9 @@ fitCop <- function(dataframe, copula, parametric, dof){
       }
       dataframe1 <- tocategory(dataframe1)
       dataframe1[sapply(dataframe1, is.character)] <- lapply(dataframe1[sapply(dataframe1, is.character)], as.factor)
-      return(dataframe1)
+      return(list(df=dataframe1,
+                  RMSE=RMSE(dataframe1, tonumeric(dataframe)),
+                  cosineSim=cosineSim(dataframe1, tonumeric(dataframe))))
     }
 
   }else{
