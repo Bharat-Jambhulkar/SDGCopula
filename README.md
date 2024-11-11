@@ -12,7 +12,7 @@ To use the function provided by this package, run the following code.
 ```r
 library(SDGCopula)
 original <- iris
-synthetic <- fitCop(original, copula='normal', parametric=FALSE)
+synthetic <- synthesize(original, copula='normal', parametric=FALSE)
 ```
 ## License
 This project is licensed under the terms of the MIT license.
